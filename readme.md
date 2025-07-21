@@ -208,7 +208,3 @@ If you encounter any issues or have questions, please:
 ---
 
 Thank you for using ImportLess! Keep your Python projects clean and dependency-minimal.
-
-```
-
----
