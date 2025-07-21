@@ -1,0 +1,50 @@
+import typer
+import time
+from rich.console import Console
+from rich.progress import track
+from importless.utils.filewalker import find_python_files
+from importless.core.analyzer import analyze_source
+from importless.core.exceptions import FileParseError
+from importless.utils.formatter import print_imports_table, print_message
+
+app = typer.Typer()
+console = Console()
+
+@app.command()
+def scan(
+    path: str = typer.Argument(".", help="Path to the Python project directory"),
+    delay: float = typer.Option(0.05, help="Delay between processing files to simulate scanning (seconds)"),
+    all: bool = typer.Option(False, "--all", help="Show all imports instead of only top-level"),
+):
+    python_files = find_python_files(path)
+    all_imports = []
+
+    for filepath in track(python_files, description="🔍 Scanning Python files...", console=console):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                source = f.read()
+            imports = analyze_source(source)
+            for imp in imports:
+                all_imports.append({
+                    "module": imp.module or "",
+                    "name": imp.name or "",
+                    "alias": imp.alias or ""
+                })
+        except Exception as e:
+            raise FileParseError(filepath, str(e))
+
+        if delay > 0:
+            time.sleep(delay)
+
+    if all_imports:
+        if not all:
+            top_level_imports = [
+                imp for imp in all_imports if imp["name"] == "" and imp["alias"] == ""
+            ]
+            print_imports_table(top_level_imports)
+            print_message(f"Found [bold]{len(top_level_imports)}[/] top-level import statements across [bold]{len(python_files)}[/] files.")
+        else:
+            print_imports_table(all_imports)
+            print_message(f"Found [bold]{len(all_imports)}[/] import statements across [bold]{len(python_files)}[/] files.")
+    else:
+        print_message("No import statements found.", style="yellow")
