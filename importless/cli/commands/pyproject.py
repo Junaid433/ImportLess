@@ -10,6 +10,7 @@ from importlib.metadata import version as get_version, PackageNotFoundError
 from importless.models.STDLIB import stdlib_modules
 import time
 import shutil
+import subprocess
 
 app = typer.Typer()
 console = Console()
@@ -94,11 +95,16 @@ def update_pyproject(
                 existing_deps[pkg.lower()] = ver["version"]
     else:
         for entry in deps_section:
-            parts = entry.split()
-            existing_deps[parts[0].lower()] = " ".join(parts[1:]) if len(parts) > 1 else "*"
+            if "==" in entry:
+                pkg, ver = entry.split("==", 1)
+                existing_deps[pkg.lower()] = f"=={ver}"
+            elif " " in entry:
+                pkg, ver = entry.split(" ", 1)
+                existing_deps[pkg.lower()] = f"=={ver.strip()}"
+            else:
+                existing_deps[entry.lower()] = "*"
 
     frozen = {}
-    import subprocess
     try:
         output = subprocess.check_output(["pip", "freeze"], text=True)
         for line in output.splitlines():
@@ -109,7 +115,6 @@ def update_pyproject(
         console.log(f"[red]❌ Failed to run pip freeze: {e}[/]")
 
     new_deps = {}
-
     for pkg in detected_packages:
         key = pkg.lower()
         if key in frozen:
@@ -117,7 +122,7 @@ def update_pyproject(
         else:
             ver = get_version_pinned(pkg)
             if "==" in ver:
-                new_deps[pkg] = ver.split("==")[1]
+                new_deps[pkg] = f"=={ver.split('==')[1]}"
             else:
                 new_deps[pkg] = "*"
 
@@ -131,11 +136,11 @@ def update_pyproject(
             poetry_deps[pkg] = ver
     else:
         proj_deps = []
-        for pkg, ver in new_deps.items():
-            if ver == "*" or ver == "":
+        for pkg, ver in sorted(new_deps.items()):
+            if ver in ["*", ""]:
                 proj_deps.append(pkg)
             else:
-                proj_deps.append(f"{pkg} {ver}")
+                proj_deps.append(f"{pkg}=={ver.lstrip('=')}")
         pyproject_data["project"]["dependencies"] = proj_deps
 
     if dry_run:
