@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "Deboalt your code by removing unused import statements"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [ "importless", "rich>=14.0.0", "toml>=0.10.2", "typer>=0.16.0",]
+dependencies = [ "importless", "rich==14.0.0", "toml==0.10.2", "typer==0.16.0",]
 [[project.authors]]
 name = "Junaid Rahman"
 

@@ -140,7 +140,7 @@ def update_pyproject(
             if ver in ["*", ""]:
                 proj_deps.append(pkg)
             else:
-                proj_deps.append(f"{pkg}=={ver.lstrip('=')}")
+                proj_deps.append(f"{pkg}>={ver.lstrip('=')}")
         pyproject_data["project"]["dependencies"] = proj_deps
 
     if dry_run:
