@@ -107,12 +107,12 @@ Scans the specified directory for Python files and extracts import statements.
 
 #### Arguments
 
-* `path` (optional): Directory path to scan. Defaults to the current directory (`.`).
+- `path` *(optional)*: Path to the directory you want to scan. Defaults to the current working directory (`.`).
 
 #### Options
 
-* `--all` (flag): Show **all** imports instead of just top-level imports.
-* `--delay FLOAT`: Time delay (in seconds) between processing each file. Default is `0.05`.
+- `--all`: Show **all** imports, including nested/local imports. By default, only top-level imports are shown.
+- `--delay <FLOAT>`: Delay (in seconds) between processing each file. Default is `0.05`. Use `--delay 0` for faster execution.
 
 #### Examples
 
@@ -120,11 +120,51 @@ Scans the specified directory for Python files and extracts import statements.
 # Scan current directory, show top-level imports only
 importless scan
 
-# Scan a specific project directory, show all imports
+# Scan a specific directory and show all imports
 importless scan --all ./myproject
 
-# Scan with no delay for faster results
+# Scan with no delay for faster scanning
 importless scan --delay 0
+```
+
+---
+
+### `export`
+
+Exports the scanned imports as a minimal `requirements.txt` file.
+
+#### Options
+
+- `-o, --output <FILE>`: Specify the output file path. Defaults to `requirements.trimmed.txt`.
+- `--freeze`: Match versions using `pip freeze` for already-installed packages.
+- `--no-comments`: Omit inline comments showing where imports were found.
+
+#### Examples
+
+```bash
+# Export requirements to the default file
+importless export
+```
+
+---
+
+### `clean`
+
+Removes unused or redundant packages from your environment or requirements file.
+
+#### Options
+
+- `-f, --file <FILE>`: Path to the original `requirements.txt` file. Defaults to `requirements.txt`.
+- `--dry-run`: Preview the changes without making modifications.
+
+#### Examples
+
+```bash
+# Clean default requirements file
+importless clean
+
+# Preview what would be removed
+importless clean --dry-run
 ```
 
 ---
